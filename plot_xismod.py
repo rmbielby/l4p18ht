@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import integrate,special
 
-# Plot the galaxy - Lyalpha forest cross correlation using the X-Shooter and UVES+HiRES datasets.
-# Plot both hubble distance xi(s) and projected xi(sigma)
-# Created 21/01/2014
+# Calculate model xi(s) given an input r0 (modr0), gamma (modgam), velocity
+# dispersion (modvdisp) and Kaiser Boost (modbeta).
+#
+# Created 06/02/2019
 
 from matplotlib import rcParams
 rcParams['axes.labelsize'] = 16
@@ -53,12 +54,12 @@ def xismod(s,vdisp,betalya):
     ntheta  = 9
     dtheta  = np.pi/2./(ntheta)
     ximodel = np.zeros((ns,ntheta))
-    xismean = np.zeros(ns)
     xismedi = np.zeros(ns)
     dsig    = 0.5*np.log10(s[1]/s[0])
     r0      = modr0
     gamma   = modgam
     betagal = 0.38
+    print 'looping through integration
     for i in np.arange(ns):
         for j in np.arange(ntheta):
             sigma = s[i]*np.cos((dtheta*(j)))
@@ -66,9 +67,17 @@ def xismod(s,vdisp,betalya):
             args         = (sigma,pi,r0,gamma,vdisp,betagal,betalya)
             ximodel[i,j] = integrate.romberg(xiint,imin,imax,args=args,divmax=20)
             # print i,j,sigarr[i][j],piarr[i][j],np.log10(ximodel[i,j]),np.log10(((sigma[i]**2+sigma[j]**2)**0.5/modr0)**(-modgam))
-        # xismean[i] = np.nanmean(ximodel[i,:])
         xismedi[i] = np.nanmedian(ximodel[i,:])
     return xismedi
+
+def output_xismod(filename,s,moodr0,modgam,modbeta,modvdisp):
+    # Write out a xis model to file.
+    ximod = xismod(s,modvdisp,modbeta)
+    output = open(filename,'w')
+    output.write('# ','s (Mpc)','xi(s)-model')
+    for i,sep in enumerate(s):
+        output.write('{0:12.6f} {1:12.6f}'.format(sep,ximod[i]))
+    output.close()
 
 s = 10.**np.arange(-1,1.6,0.1)
 fig,axis = plt.subplots(1,1)
