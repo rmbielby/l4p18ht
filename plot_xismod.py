@@ -22,7 +22,7 @@ modgam   = 1.2
 # Integration parameters
 imin = -8000.
 imax = -imin
-h0   = 100.
+h0   = 70.
 def xiint(v,sigma,pi,r0,gamma,vdisp,betagal,betalya):
     r        = (sigma**2.+(pi-v/h0)**2.)**0.5
     costheta = (pi-v/h0)/r
